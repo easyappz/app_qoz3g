@@ -1,32 +1,70 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Card, Select, Button, Typography, message, Space } from 'antd';
+
+const { Title, Text } = Typography;
+
+const difficultyOptions = [
+  { label: 'Новичок', value: 'beginner' },
+  { label: 'Средний', value: 'medium' },
+  { label: 'Эксперт', value: 'expert' },
+];
+
+const colorOptions = [
+  { label: 'Белые', value: 'white' },
+  { label: 'Черные', value: 'black' },
+];
 
 export default function Settings() {
+  const [difficulty, setDifficulty] = useState('beginner');
+  const [playerColor, setPlayerColor] = useState('white');
+
+  useEffect(() => {
+    const savedDifficulty = localStorage.getItem('defaultDifficulty');
+    const savedColor = localStorage.getItem('defaultColor');
+    if (savedDifficulty) setDifficulty(savedDifficulty);
+    if (savedColor) setPlayerColor(savedColor);
+  }, []);
+
+  const onSave = () => {
+    localStorage.setItem('defaultDifficulty', difficulty);
+    localStorage.setItem('defaultColor', playerColor);
+    message.success('Настройки сохранены');
+  };
+
   return (
-    <div className="space-y-6" data-easytag="id1-react/src/pages/Settings.jsx">
-      <header data-easytag="id2-react/src/pages/Settings.jsx">
-        <h1 className="text-2xl font-semibold" data-easytag="id3-react/src/pages/Settings.jsx">Настройки</h1>
-        <p className="text-gray-600" data-easytag="id4-react/src/pages/Settings.jsx">Выберите параметры интерфейса и игры.</p>
-      </header>
+    <div className="max-w-3xl mx-auto" data-easytag="id1-react/src/pages/Settings.jsx">
+      <div className="mb-6" data-easytag="id2-react/src/pages/Settings.jsx">
+        <Title level={2} className="!mb-1" data-easytag="id3-react/src/pages/Settings.jsx">Настройки</Title>
+        <Text type="secondary" data-easytag="id4-react/src/pages/Settings.jsx">Выберите значения по умолчанию для новых партий</Text>
+      </div>
 
-      <form className="grid gap-4 max-w-xl" data-easytag="id5-react/src/pages/Settings.jsx" onSubmit={(e) => e.preventDefault()}>
-        <div data-easytag="id6-react/src/pages/Settings.jsx">
-          <label className="block text-sm font-medium mb-1" htmlFor="theme" data-easytag="id7-react/src/pages/Settings.jsx">Тема</label>
-          <select id="theme" className="w-full border rounded-md px-3 py-2" data-easytag="id8-react/src/pages/Settings.jsx">
-            <option value="light" data-easytag="id9-react/src/pages/Settings.jsx">Светлая</option>
-            <option value="dark" data-easytag="id10-react/src/pages/Settings.jsx">Тёмная</option>
-          </select>
-        </div>
+      <Card className="bg-white shadow" data-easytag="id5-react/src/pages/Settings.jsx">
+        <div className="space-y-4" data-easytag="id6-react/src/pages/Settings.jsx">
+          <div className="flex flex-col gap-2" data-easytag="id7-react/src/pages/Settings.jsx">
+            <label className="text-sm text-gray-600" data-easytag="id8-react/src/pages/Settings.jsx">Сложность по умолчанию</label>
+            <Select
+              value={difficulty}
+              onChange={setDifficulty}
+              options={difficultyOptions}
+              size="large"
+            />
+          </div>
 
-        <div data-easytag="id11-react/src/pages/Settings.jsx">
-          <label className="block text-sm font-medium mb-1" htmlFor="timer" data-easytag="id12-react/src/pages/Settings.jsx">Таймер (минут)</label>
-          <input id="timer" type="number" min="1" max="60" className="w-full border rounded-md px-3 py-2" placeholder="10" data-easytag="id13-react/src/pages/Settings.jsx" />
-        </div>
+          <div className="flex flex-col gap-2" data-easytag="id9-react/src/pages/Settings.jsx">
+            <label className="text-sm text-gray-600" data-easytag="id10-react/src/pages/Settings.jsx">Цвет игрока по умолчанию</label>
+            <Select
+              value={playerColor}
+              onChange={setPlayerColor}
+              options={colorOptions}
+              size="large"
+            />
+          </div>
 
-        <div className="flex items-center gap-3" data-easytag="id14-react/src/pages/Settings.jsx">
-          <button type="submit" className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition" data-easytag="id15-react/src/pages/Settings.jsx">Сохранить</button>
-          <button type="reset" className="px-4 py-2 rounded-md bg-gray-100 text-gray-800 hover:bg-gray-200 transition" data-easytag="id16-react/src/pages/Settings.jsx">Сбросить</button>
+          <Space data-easytag="id11-react/src/pages/Settings.jsx">
+            <Button type="primary" size="large" onClick={onSave} data-easytag="id12-react/src/pages/Settings.jsx">Сохранить</Button>
+          </Space>
         </div>
-      </form>
+      </Card>
     </div>
   );
 }

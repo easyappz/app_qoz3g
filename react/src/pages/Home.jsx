@@ -1,29 +1,100 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Card, Select, Button, Typography, message, Space } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import { createGame } from '../api/chess';
+
+const { Title, Paragraph, Text } = Typography;
+
+const difficultyOptions = [
+  { label: 'Новичок', value: 'beginner' },
+  { label: 'Средний', value: 'medium' },
+  { label: 'Эксперт', value: 'expert' },
+];
+
+const colorOptions = [
+  { label: 'Белые', value: 'white' },
+  { label: 'Черные', value: 'black' },
+];
 
 export default function Home() {
-  return (
-    <div className="space-y-8" data-easytag="id1-react/src/pages/Home.jsx">
-      <header className="text-center" data-easytag="id2-react/src/pages/Home.jsx">
-        <h1 className="text-3xl font-bold" data-easytag="id3-react/src/pages/Home.jsx">Шахматы онлайн</h1>
-        <p className="text-gray-600 mt-2" data-easytag="id4-react/src/pages/Home.jsx">Начните новую партию или откройте историю игр. Интерфейс аккуратный и понятный.</p>
-      </header>
+  const navigate = useNavigate();
+  const [difficulty, setDifficulty] = useState('beginner');
+  const [playerColor, setPlayerColor] = useState('white');
+  const [loading, setLoading] = useState(false);
 
-      <section className="grid md:grid-cols-2 gap-6" data-easytag="id5-react/src/pages/Home.jsx">
-        <div className="rounded-lg bg-white p-6 shadow" data-easytag="id6-react/src/pages/Home.jsx">
-          <h2 className="text-xl font-semibold" data-easytag="id7-react/src/pages/Home.jsx">Быстрый старт</h2>
-          <div className="mt-4 flex flex-wrap gap-3" data-easytag="id8-react/src/pages/Home.jsx">
-            <Link to="/game/1" className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition" data-easytag="id9-react/src/pages/Home.jsx">Новая игра</Link>
-            <Link to="/history" className="px-4 py-2 rounded-md bg-gray-100 text-gray-800 hover:bg-gray-200 transition" data-easytag="id10-react/src/pages/Home.jsx">История</Link>
-            <Link to="/settings" className="px-4 py-2 rounded-md bg-gray-100 text-gray-800 hover:bg-gray-200 transition" data-easytag="id11-react/src/pages/Home.jsx">Настройки</Link>
+  useEffect(() => {
+    const savedDifficulty = localStorage.getItem('defaultDifficulty');
+    const savedColor = localStorage.getItem('defaultColor');
+    if (savedDifficulty) setDifficulty(savedDifficulty);
+    if (savedColor) setPlayerColor(savedColor);
+  }, []);
+
+  const onStart = async () => {
+    try {
+      setLoading(true);
+      const payload = { difficulty, playerColor };
+      const data = await createGame(payload);
+      const game = data && data.game ? data.game : null;
+      const id = game && (game._id || game.id);
+      if (!id) {
+        message.error('Не удалось создать игру: неизвестный ответ сервера');
+        return;
+      }
+      message.success('Игра создана');
+      navigate(`/game/${id}`);
+    } catch (e) {
+      message.error('Ошибка при создании игры');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto" data-easytag="id1-react/src/pages/Home.jsx">
+      <div className="mb-6" data-easytag="id2-react/src/pages/Home.jsx">
+        <Title level={2} className="!mb-2" data-easytag="id3-react/src/pages/Home.jsx">Шахматы против компьютера</Title>
+        <Text type="secondary" data-easytag="id4-react/src/pages/Home.jsx">Классическая партия с выбором сложности и цвета. Интерфейс и фигуры в классическом стиле.</Text>
+      </div>
+
+      <Card className="bg-white shadow" data-easytag="id5-react/src/pages/Home.jsx">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6" data-easytag="id6-react/src/pages/Home.jsx">
+          <div data-easytag="id7-react/src/pages/Home.jsx">
+            <Typography data-easytag="id8-react/src/pages/Home.jsx">
+              <Paragraph className="text-gray-700" data-easytag="id9-react/src/pages/Home.jsx">
+                Начните новую партию против компьютера. Выберите удобный уровень сложности и цвет фигур. Результаты сохраняются и доступны в истории.
+              </Paragraph>
+            </Typography>
+          </div>
+
+          <div className="space-y-4" data-easytag="id10-react/src/pages/Home.jsx">
+            <div className="flex flex-col gap-2" data-easytag="id11-react/src/pages/Home.jsx">
+              <label className="text-sm text-gray-600" data-easytag="id12-react/src/pages/Home.jsx">Сложность</label>
+              <Select
+                value={difficulty}
+                onChange={setDifficulty}
+                options={difficultyOptions}
+                size="large"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2" data-easytag="id13-react/src/pages/Home.jsx">
+              <label className="text-sm text-gray-600" data-easytag="id14-react/src/pages/Home.jsx">Цвет фигур</label>
+              <Select
+                value={playerColor}
+                onChange={setPlayerColor}
+                options={colorOptions}
+                size="large"
+              />
+            </div>
+
+            <Space data-easytag="id15-react/src/pages/Home.jsx">
+              <Button type="primary" size="large" onClick={onStart} loading={loading} data-easytag="id16-react/src/pages/Home.jsx">
+                Начать партию
+              </Button>
+            </Space>
           </div>
         </div>
-
-        <div className="rounded-lg bg-white p-6 shadow" data-easytag="id12-react/src/pages/Home.jsx">
-          <h2 className="text-xl font-semibold" data-easytag="id13-react/src/pages/Home.jsx">Изображение</h2>
-          <div className="mt-4 w-full h-48 bg-gray-100 rounded-md" data-easytag="id14-react/src/pages/Home.jsx"></div>
-        </div>
-      </section>
+      </Card>
     </div>
   );
 }
