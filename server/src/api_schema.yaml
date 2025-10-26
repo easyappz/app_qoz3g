@@ -1,27 +1,54 @@
 openapi: 3.0.0
 info:
-  title: Chess Backend API
-  version: 0.1.0
-  description: Base endpoints for the chess backend. Will be extended later.
+  title: Chess vs Computer API
+  version: 1.0.0
+  description: REST API to play chess against AI with difficulty levels, persistence and PGN export.
 servers:
-  - url: http://localhost:3001
+  - url: /api
 paths:
-  /api/hello:
-    get:
-      summary: Hello endpoint
-      description: Returns a greeting message.
-      parameters: []
+  /chess/games:
+    post:
+      summary: Create a new chess game
+      operationId: createGame
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                difficulty:
+                  type: string
+                  enum: [beginner, medium, expert]
+                playerColor:
+                  type: string
+                  enum: [white, black]
+              required: [difficulty]
       responses:
-        '200':
-          description: Successful response
+        '201':
+          description: Game created
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                    example: Hello from API!
+                  game:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      fen: { type: string }
+                      pgn: { type: string }
+                      difficulty: { type: string }
+                      playerColor: { type: string }
+                      status: { type: string }
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
         '500':
           description: Server error
           content:
@@ -29,29 +56,32 @@ paths:
               schema:
                 type: object
                 properties:
-                  error:
-                    type: string
-                    example: Something went wrong
-  /api/status:
+                  error: { type: string }
     get:
-      summary: Status endpoint
-      description: Returns service status and current server timestamp.
-      parameters: []
+      summary: List games with pagination
+      operationId: listGames
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 10 }
       responses:
         '200':
-          description: Successful response
+          description: List of games
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  status:
-                    type: string
-                    example: ok
-                  timestamp:
-                    type: string
-                    format: date-time
-                    example: 2025-01-01T00:00:00.000Z
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Game'
+                  total: { type: integer }
+                  page: { type: integer }
+                  limit: { type: integer }
         '500':
           description: Server error
           content:
@@ -59,6 +89,164 @@ paths:
               schema:
                 type: object
                 properties:
-                  error:
-                    type: string
-                    example: Something went wrong
+                  error: { type: string }
+  /chess/games/{id}:
+    get:
+      summary: Get a game by id
+      operationId: getGame
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Game details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  game:
+                    $ref: '#/components/schemas/Game'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+  /chess/games/{id}/move:
+    post:
+      summary: Make a player move and then AI responds
+      operationId: makeMove
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                from: { type: string, example: 'e2' }
+                to: { type: string, example: 'e4' }
+                promotion: { type: string, example: 'q' }
+              required: [from, to]
+      responses:
+        '200':
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  game:
+                    $ref: '#/components/schemas/Game'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+  /chess/games/{id}/export:
+    get:
+      summary: Export game PGN
+      operationId: exportPGN
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+        - in: query
+          name: format
+          required: false
+          schema: { type: string, enum: [json, text], default: json }
+      responses:
+        '200':
+          description: PGN export
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pgn: { type: string }
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+components:
+  schemas:
+    Move:
+      type: object
+      properties:
+        san: { type: string }
+        uci: { type: string }
+        by: { type: string, enum: [human, ai] }
+    Game:
+      type: object
+      properties:
+        _id: { type: string }
+        playerColor: { type: string, enum: [white, black] }
+        difficulty: { type: string, enum: [beginner, medium, expert] }
+        status: { type: string, enum: [in_progress, finished] }
+        moves:
+          type: array
+          items:
+            $ref: '#/components/schemas/Move'
+        fen: { type: string }
+        pgn: { type: string }
+        result: { type: string, nullable: true, enum: ['1-0', '0-1', '1/2-1/2', null] }
+        startedAt: { type: string, format: date-time }
+        finishedAt: { type: string, format: date-time, nullable: true }
+        metadata:
+          type: object
+          properties:
+            startedFen: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
