@@ -1,0 +1,64 @@
+openapi: 3.0.0
+info:
+  title: Chess Backend API
+  version: 0.1.0
+  description: Base endpoints for the chess backend. Will be extended later.
+servers:
+  - url: http://localhost:3001
+paths:
+  /api/hello:
+    get:
+      summary: Hello endpoint
+      description: Returns a greeting message.
+      parameters: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Hello from API!
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Something went wrong
+  /api/status:
+    get:
+      summary: Status endpoint
+      description: Returns service status and current server timestamp.
+      parameters: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: 2025-01-01T00:00:00.000Z
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Something went wrong

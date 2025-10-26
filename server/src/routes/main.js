@@ -1,34 +1,31 @@
 const express = require('express');
-const mongoose = require('mongoose');
-
-/**
- * Пример создания модели в базу данных
- */
-// const MongoTestSchema = new mongoose.Schema({
-//   value: { type: String, required: true },
-// });
-
-// const MongoModelTest = mongoose.model('Test', MongoTestSchema);
-
-// const newTest = new MongoModelTest({
-//   value: 'test-value',
-// });
-
-// newTest.save();
 
 const router = express.Router();
 
+// Placeholder for future chess endpoints under /api/chess/*
+const chessRouter = express.Router();
+// Future chess routes will be added here (vs computer, move validation, etc.)
+router.use('/chess', chessRouter);
+
 // GET /api/hello
-router.get('/hello', (req, res) => {
-  res.json({ message: 'Hello from API!' });
+router.get('/hello', async (req, res) => {
+  try {
+    res.status(200).json({ message: 'Hello from API!' });
+  } catch (err) {
+    res.status(500).json({ error: err && err.message ? err.message : 'Unknown error' });
+  }
 });
 
 // GET /api/status
-router.get('/status', (req, res) => {
-  res.json({ 
-    status: 'ok',
-    timestamp: new Date().toISOString()
-  });
+router.get('/status', async (req, res) => {
+  try {
+    res.status(200).json({
+      status: 'ok',
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    res.status(500).json({ error: err && err.message ? err.message : 'Unknown error' });
+  }
 });
 
 module.exports = router;
